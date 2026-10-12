@@ -4,7 +4,7 @@ Content-addressed context store for AI conversations.
 
 ![aside-ctx: AI Context Overhead Optimization Pipeline](AI_Context_Overhead_Optimization_Pipeline.png)
 
-> **[aside-ctx-narration.wav](aside-ctx-narration.wav)** -- listen to the 1-minute narrated overview
+> **[aside-ctx-narration.mp3](aside-ctx-narration.mp3)** -- listen to the 1-minute narrated overview
 
 ---
 
