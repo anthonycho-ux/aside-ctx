@@ -4,6 +4,13 @@ Content-addressed context store for AI conversations.
 
 ![aside-ctx: AI Context Overhead Optimization Pipeline](AI_Context_Overhead_Optimization_Pipeline.png)
 
+<audio controls>
+  <source src="aside-ctx-narration.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+*Listen to the story of aside-ctx (1 min narrated overview)*
+
 ---
 
 Your AI has a blind spot. It carries everything you ever showed it, forever.
