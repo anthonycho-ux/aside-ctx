@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>aside-ctx Architecture</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f9fa;
+    color: #1a1a2e;
+    line-height: 1.5;
+    padding: 40px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+  .subtitle { color: #666; font-size: 16px; margin-bottom: 40px; }
+
+  .problem-box {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 32px;
+  }
+  .problem-box strong { display: block; font-size: 18px; margin-bottom: 8px; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .stat-number { font-size: 32px; font-weight: 700; color: #2563eb; }
+  .stat-label { font-size: 13px; color: #666; margin-top: 4px; }
+
+  .flow-diagram {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    background: #eef2ff;
+    border: 2px solid #c7d2fe;
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .flow-box .label { font-size: 12px; color: #4f46e5; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .flow-box .desc { font-size: 14px; margin-top: 4px; color: #1e1b4b; }
+  .flow-arrow { font-size: 24px; color: #94a3b8; }
+  .flow-label { font-size: 11px; color: #64748b; text-align: center; }
+
+  .before-after {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  .before-box, .after-box {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .before-box { border-left: 4px solid #ef4444; }
+  .after-box { border-left: 4px solid #22c55e; }
+  .ba-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .ba-content { font-size: 13px; color: #555; line-height: 1.6; }
+  .ba-content code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    word-break: break-all;
+  }
+  .arrow-col { font-size: 28px; color: #94a3b8; text-align: center; }
+
+  .section-title { font-size: 20px; font-weight: 600; margin: 32px 0 16px; }
+  .command-box {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .command-box .comment { color: #94a3b8; }
+  .file-tree {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+  .file-tree .dir { color: #2563eb; }
+  .file-tree .file { color: #334155; }
+  .file-tree .sep { color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<h1>aside-ctx</h1>
+<p class="subtitle">Content-addressed context store for AI conversations</p>
+
+<div class="problem-box">
+  <strong>⚡ The Problem</strong>
+  Every conversation with an AI agent carries the full text of every tool result ever produced — JSON blobs, terminal dumps, file contents — even from months ago. 71.2% of conversation tokens are stale output nobody looks at twice. The AI spends more time re-reading yesterday's garbage than solving today's problems.
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-number">71.2%</div>
+    <div class="stat-label">Conversation is stale tool output</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">~65%</div>
+    <div class="stat-label">Prompt reduction with aside-ctx</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">970</div>
+    <div class="stat-label">Blobs stored content-addressed</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">5 MB</div>
+    <div class="stat-label">Externalized from conversations</div>
+  </div>
+</div>
+
+<div class="section-title">How it works</div>
+<div class="flow-diagram">
+  <div class="flow-row">
+    <div class="flow-box">
+      <div class="label">AI Agent</div>
+      <div class="desc">Runs tools, produces output</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">
+      <div class="label">Optimizer</div>
+      <div class="desc">Watches session logs, finds blobs >1KB</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:#22c55e;background:#f0fdf4;">
+      <div class="label">aside-ctx</div>
+      <div class="desc">SHA-256 store on :9876</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">
+      <div class="label">Conversation</div>
+      <div class="desc">Handle replaces blob</div>
+    </div>
+  </div>
+  <div class="flow-row" style="margin-top:8px;">
+    <div style="font-size:13px;color:#64748b;text-align:center;max-width:600px;">
+      <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px;">
+        [stored in aside-ctx] tool=bash handle=sha256:abc123... digest="first 200 chars..." size=45721
+      </code>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Before vs After</div>
+<div class="before-after">
+  <div class="before-box">
+    <div class="ba-title" style="color:#dc2626;">Before: Everything inline</div>
+    <div class="ba-content">
+      45,721 bytes of terminal output, JSON, file contents<br>
+      <em>every single turn</em><br><br>
+      <code>{"stdout": "build succeeded\n... 400 more lines ...", "stderr": ""}</code>
+    </div>
+  </div>
+  <div class="arrow-col">→</div>
+  <div class="after-box">
+    <div class="ba-title" style="color:#16a34a;">After: Handle reference</div>
+    <div class="ba-content">
+      187 bytes of handle metadata<br>
+      <em>full content fetched on demand</em><br><br>
+      <code>[stored in aside-ctx] tool=bash handle=sha256:a1b2c3... digest="build succeeded" size=45721</code>
+    </div>
+  </div>
+</div>
+
+<div class="section-title">Project structure</div>
+<div class="file-tree">
+<span class="dir">aside-ctx/</span><br>
+├── <span class="file">main.go</span> <span class="sep">—</span> HTTP server on :9876<br>
+├── <span class="file">store.go</span> <span class="sep">—</span> SHA-256 flat file store + JSONL index<br>
+├── <span class="file">handlers.go</span> <span class="sep">—</span> POST /store, GET /resolve/{handle}, GET /stats, GET /health<br>
+├── <span class="file">digest.go</span> <span class="sep">—</span> Digest generation for tool result content<br>
+├── <span class="file">cmd/optimizer/main.go</span> <span class="sep">—</span> Watches session logs, stores large blobs<br>
+├── <span class="file">cmd/memory-indexer/main.go</span> <span class="sep">—</span> Compresses MEMORY.md to index<br>
+├── <span class="file">*_test.go</span> <span class="sep">—</span> Test suite<br>
+└── <span class="file">INTEGRATION.md</span> <span class="sep">—</span> Integration spec<br>
+</div>
+
+<div class="section-title">API</div>
+<div class="command-box">
+  <span class="comment"># Store content (returns SHA-256 handle)</span><br>
+  curl -s -X POST http://127.0.0.1:9876/store \<br>
+  &nbsp;&nbsp;-d '{"content": "..."}'<br><br>
+  <span class="comment"># Resolve handle to full content</span><br>
+  curl -s http://127.0.0.1:9876/resolve/sha256:abc123...<br><br>
+  <span class="comment"># Stats</span><br>
+  curl -s http://127.0.0.1:9876/stats
+</div>
+
+</body>
+</html>

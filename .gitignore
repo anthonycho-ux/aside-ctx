@@ -1,0 +1,4 @@
+*.bak
+aside-ctx
+aside-optimizer
+memory-indexer
